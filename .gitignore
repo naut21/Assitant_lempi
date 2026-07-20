@@ -1,0 +1,7 @@
+node_modules/
+auth/
+database.db
+database.db-shm
+database.db-wal
+tmp/
+*.log

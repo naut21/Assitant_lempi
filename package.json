@@ -1,0 +1,23 @@
+{
+  "name": "assistant-lempi",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Un simple bot de WhatsApp",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "dependencies": {
+    "baileys": "7.0.0-rc13",
+    "dotenv": "^17.4.2",
+    "ffmpeg-static": "^5.3.0",
+    "pino": "^10.3.1",
+    "jimp": "*",
+    "sharp": "^0.35.3"
+  }
+}
