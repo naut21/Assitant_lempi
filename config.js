@@ -1,6 +1,6 @@
 const config = {
   botName: 'Tortlu',
-  devs: [],
+  devs: ['50498273976'],
   prefix: ['.', '!', '#']
 }
 
