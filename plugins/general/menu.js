@@ -5,8 +5,8 @@ export default {
   run: async m => {
     const hour = new Date().getHours()
     const greet =
-      hour < 6 ? 'Buenas madrugadas' :
-      hour < 12 ? 'Buenas mañanas' :
+      hour < 6 ? 'Buenos dias' :
+      hour < 12 ? 'Buenos días' :
       hour < 19 ? 'Buenas tardes' :
       'Buenas noches'
     const icon =
