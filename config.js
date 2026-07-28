@@ -1,5 +1,5 @@
 const config = {
-  botName: 'Assistant Lempi',
+  botName: 'Tortlu',
   devs: [],
   prefix: ['.', '!', '#']
 }
