@@ -30,7 +30,7 @@ export default {
     for (const category of Object.keys(sections).sort()) {
       body += `\n☔ *${category.toUpperCase()}*\n`
       for (const cmd of sections[category].sort((a, b) => a.help.localeCompare(b.help))) {
-        body += `> ◦ *${m.prefix}${cmd.help}*\n   > ${cmd.description}\n`
+        body += `> ◦ *${m.prefix}${cmd.help}*\n   >  ${cmd.description}\n`
       }
     }
 
