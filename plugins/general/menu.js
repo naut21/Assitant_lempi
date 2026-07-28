@@ -3,7 +3,14 @@ export default {
   help: 'menu',
   description: 'Muestra la lista de comandos',
   run: async m => {
-    const hour = new Date().getHours()
+    const tz = 'America/Tegucigalpa'
+    const hour = Number(
+      new Intl.DateTimeFormat('en-US', {
+        timeZone: tz,
+        hour: 'numeric',
+        hour12: false
+      }).format(new Date())
+    )
     const greet =
       hour < 6 ? 'Buenos dias' :
       hour < 12 ? 'Buenos días' :
@@ -30,12 +37,12 @@ export default {
     for (const category of Object.keys(sections).sort()) {
       body += `\n☔ *${category.toUpperCase()}*\n`
       for (const cmd of sections[category].sort((a, b) => a.help.localeCompare(b.help))) {
-        body += `> ◦ *${m.prefix}${cmd.help}*\n   >  ${cmd.description}\n`
+        body += `> ◦ *${m.prefix}${cmd.help}*\n   *${cmd.description}*\n`
       }
     }
 
     const time = new Date().toLocaleTimeString('es-HN', {
-      timeZone: 'America/Tegucigalpa',
+      timeZone: tz,
       hour: 'numeric',
       minute: '2-digit',
       hour12: true
