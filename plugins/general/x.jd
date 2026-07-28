@@ -1,0 +1,68 @@
+import sharp from 'sharp'
+import { readFile } from 'fs/promises'
+import { fileURLToPath } from 'url'
+import { dirname, join } from 'path'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const BACKGROUND = join(__dirname, '..', '..', 'assets', 'location-bg.png')
+
+async function createLocationThumbnail({ name, latitude, longitude }) {
+  const safeName = String(name).replace(/[<>&\/'"`]/g, '').slice(0, 40)
+  const meta = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`
+
+  const overlay = `
+    <svg width="500" height="250" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="g" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="50%" stop-color="black" stop-opacity="0"/>
+          <stop offset="100%" stop-color="black" stop-opacity="0.75"/>
+        </linearGradient>
+      </defs>
+      <rect width="500" height="250" fill="url(#g)"/>
+      <text x="24" y="190" font-size="32">📍</text>
+      <text x="70" y="198" font-size="28" font-weight="bold" fill="white" font-family="Arial">${safeName}</text>
+      <text x="24" y="225" font-size="14" fill="white" font-family="monospace" opacity="0.9">${meta}</text>
+    </svg>
+  `
+
+  const background = await readFile(BACKGROUND)
+
+  return await sharp(background)
+    .resize(500, 250, { fit: 'cover', position: 'center' })
+    .composite([{ input: Buffer.from(overlay), top: 0, left: 0 }])
+    .jpeg({ quality: 80 })
+    .toBuffer()
+}
+
+export default {
+  command: ['location', 'loc', 'ubi'],
+  help: 'location',
+  description: 'Envía una ubicación con imagen personalizada',
+  run: async m => {
+    const [lat, lng, ...nameParts] = m.args
+    const name = nameParts.join(' ') || 'Ubicación'
+    const latitude = Number(lat)
+    const longitude = Number(lng)
+
+    if (isNaN(latitude) || isNaN(longitude)) {
+      return m.reply('Uso: .location <latitud> <longitud> [nombre]\nEjemplo: .location 14.0723 -87.1921 Tegucigalpa')
+    }
+
+    try {
+      const jpegThumbnail = await createLocationThumbnail({ name, latitude, longitude })
+
+      await m.sock.sendMessage(m.chat, {
+        location: {
+          degreesLatitude: latitude,
+          degreesLongitude: longitude,
+          name,
+          jpegThumbnail
+        }
+      }, { quoted: m.message })
+
+    } catch (error) {
+      console.error('Error enviando ubicación:', error)
+      await m.reply('No se pudo enviar la ubicación.')
+    }
+  }
+}
