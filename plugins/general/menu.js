@@ -58,7 +58,7 @@ export default {
 ${body}
 > *Using Baileys* ©`.trim()
 
-    const bannerUrl = 'https://lemi-beryl.vercel.app/p/1d9oos/1d9oos.png'
+    const bannerUrl = 'https://s.lempi.lat/yvLfgHKY'
 
     try {
       const response = await fetch(bannerUrl)
