@@ -45,16 +45,16 @@ export default {
       })
 
       const data = await getJson(
-        `https://api.lempi.lat/dl/yta?url=${encodeURIComponent(videoUrl)}&quality=128&apikey=Adobuffkey`,
+        `https://api.lempi.lat/dl/ytav3?url=${encodeURIComponent(videoUrl)}&apikey=Adobuffkey`,
         120000
       )
 
-      if (!data.status || !data.descarga?.url) {
+      if (!data.status || !data.url) {
         throw new Error('La api no devolvió el audio')
       }
 
       return m.send({
-        audio: { url: data.descarga.url },
+        audio: { url: data.url },
         mimetype: 'audio/mpeg',
         fileName: data.descarga.archivo || `${data.titulo}.mp3`,
         ptt: true
