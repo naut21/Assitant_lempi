@@ -1,7 +1,7 @@
 export default {
   command: ['playaudio'],
   help: 'playaudio',
-  description: 'Descarga audio de YouTube en MP3',
+  description: 'Descarga un video de YouTube en MP3',
 
   run: async m => {
     const query = (m.args || []).join(' ').trim()
