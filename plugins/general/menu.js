@@ -12,7 +12,7 @@ export default {
       new Intl.DateTimeFormat('en-US', {
         timeZone: tz,
         hour: 'numeric',
-        hour12: false
+        hour12: true
       }).format(new Date())
     )
 
