@@ -1,7 +1,7 @@
 export default {
   command: ['playaudio'],
   help: 'playaudio',
-  description: 'Descarga un video de YouTube en MP3',
+  description: 'Descarga el audio de un video de YouTube',
 
   run: async m => {
     const query = (m.args || []).join(' ').trim()
@@ -23,18 +23,21 @@ export default {
         ? search.resultados?.find(video => video.id === videoId)
         : search.resultados?.[0]
 
-      if (!videoId && !result?.url) {
-        return m.reply(`> *🍡 No se encontraron resultados para* \`${query}\`.`)
+      if (!result?.url && !videoId) {
+        return m.reply(
+          `> *🍡 No se encontraron resultados para* \`${query}\`.`
+        )
       }
 
+      const selectedId = result?.id || videoId
       const videoUrl = result?.url || query
       const title = result?.titulo || 'Audio de YouTube'
       const thumbnail =
         result?.miniatura ||
-        `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
+        `https://i.ytimg.com/vi/${selectedId}/hqdefault.jpg`
 
       const caption =
-`🍧 Descargando  \`${title}\`
+`🍧 Descargando \`${title}\`
   ◦ *Duración :* ${formatDuration(result?.duracion)}
   ◦ *Vistas :* ${formatViews(result?.vistas)}
   ◦ *Publicado :* ${formatPublished(result?.subido)}`
@@ -45,23 +48,25 @@ export default {
       })
 
       const data = await getJson(
-        `https://api.lempi.lat/dl/ytav3?url=${encodeURIComponent(videoUrl)}&apikey=Adobuffkey`,
+        `https://api.lempi.lat/download/ytav3?url=${encodeURIComponent(videoUrl)}&apikey=Adobuffkey`,
         120000
       )
 
       if (!data.status || !data.url) {
-        throw new Error('La api no devolvió el audio')
+        throw new Error('La API no devolvió la URL del audio')
       }
 
       return m.send({
         audio: { url: data.url },
-        mimetype: 'audio/mpeg',
-        fileName: data.descarga.archivo || `${data.titulo}.mp3`,
+        mimetype: 'audio/ogg; codecs=opus',
+        fileName: `${sanitizeFileName(title)}.opus`,
         ptt: true
       })
     } catch (error) {
       console.error('Error descargando audio:', error)
-      return m.reply('> Algo salió mal, no se pudo descargar el `audio`.')
+      return m.reply(
+        '> Algo salió mal, no se pudo descargar el `audio`.'
+      )
     }
   }
 }
@@ -132,6 +137,7 @@ function formatPublished(value) {
 
   if (relative) {
     const amount = Number(relative[1])
+
     const units = {
       second: ['segundo', 'segundos'],
       minute: ['minuto', 'minutos'],
@@ -143,6 +149,7 @@ function formatPublished(value) {
     }
 
     const unit = units[relative[2].toLowerCase()]
+
     return `Hace ${amount} ${amount === 1 ? unit[0] : unit[1]}`
   }
 
@@ -163,6 +170,14 @@ function formatPublished(value) {
   return String(value)
 }
 
+function sanitizeFileName(value) {
+  return String(value)
+    .replace(/[\\/:*?"<>|]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 150) || 'audio'
+}
+
 async function getJson(url, timeout = 30000) {
   const response = await fetch(url, {
     signal: AbortSignal.timeout(timeout)
@@ -177,6 +192,6 @@ async function getJson(url, timeout = 30000) {
   try {
     return JSON.parse(text)
   } catch {
-    throw new Error('La API devolvió una respuesta inválida')
+    throw new Error(`La API devolvió una respuesta inválida: ${text}`)
   }
 }
