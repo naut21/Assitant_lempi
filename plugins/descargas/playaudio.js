@@ -57,7 +57,7 @@ export default {
         audio: { url: data.descarga.url },
         mimetype: 'audio/mpeg',
         fileName: data.descarga.archivo || `${data.titulo}.mp3`,
-        ptt: false
+        ptt: true
       })
     } catch (error) {
       console.error('Error descargando audio:', error)
