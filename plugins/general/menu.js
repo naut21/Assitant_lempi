@@ -123,7 +123,7 @@ ${body}`.trim()
                 description:
                   'Un simple asistente de WhatsApp, destinado a ayudar.',
                 retailerId: botName,
-                url: 'https://sylphyy.xyz',
+                url: 'https://api.lempi.lat',
                 productImageCount: 1
               },
 
