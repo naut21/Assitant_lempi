@@ -1,6 +1,6 @@
 export default {
   command: ['playaudio'],
-  help: 'playaudio <Nombre o URL>',
+  help: 'playaudio',
   description: 'Descarga audio de YouTube en MP3',
 
   run: async m => {
