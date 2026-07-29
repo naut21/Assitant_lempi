@@ -1,4 +1,4 @@
-import { prepareWAMessageMedia } from 'baileys'
+import { generateWAMessageFromContent, jidNormalizedUser, prepareWAMessageMedia, proto } from 'baileys'
 
 export default {
   command: ['menu', 'help'],
@@ -31,9 +31,11 @@ export default {
     const sections = {}
 
     for (const plugin of m.plugins) {
-      sections[plugin.category] ??= []
+      const category = plugin.category || 'Otros'
 
-      sections[plugin.category].push({
+      sections[category] ??= []
+
+      sections[category].push({
         help: plugin.help,
         description: plugin.description
       })
@@ -44,13 +46,13 @@ export default {
     for (const category of Object.keys(sections).sort()) {
       body += `\n☔ *${category.toUpperCase()}*\n`
 
-      for (
-        const cmd of sections[category].sort((a, b) =>
-          a.help.localeCompare(b.help)
-        )
-      ) {
+      const commands = sections[category].sort((a, b) =>
+        String(a.help).localeCompare(String(b.help))
+      )
+
+      for (const cmd of commands) {
         body += `> ◦ *${m.prefix}${cmd.help}*\n`
-        body += `   *${cmd.description}*\n`
+        body += `   *${cmd.description || 'Sin descripción'}*\n`
       }
     }
 
@@ -66,8 +68,10 @@ export default {
       .split(':')[0]
       .replace(/\D/g, '')
 
+    const botName = globalThis.botName || 'Sylphy'
+
     const txt =
-`*${icon} Hola, ${greet}* @${senderNumber}, un gusto saludarte. ¡Soy ${globalThis.botName}!
+`*${icon} Hola, ${greet}* @${senderNumber}, un gusto saludarte. ¡Soy ${botName}!
 
 > Un simple bot de WhatsApp enfocado en ayudar a las personas.
 
@@ -78,12 +82,21 @@ ${body}`.trim()
 
     try {
       const sock = m.sock
+      const jid = m.chat || m.from || m.key?.remoteJid
 
-      if (!sock?.waUploadToServer || !sock?.relayMessage) {
-        throw new Error(
-          'No se encontró el socket de Baileys dentro de m'
-        )
+      if (!sock) {
+        throw new Error('No se encontró m.sock')
       }
+
+      if (!jid) {
+        throw new Error('No se encontró el JID del chat')
+      }
+
+      if (!sock.user?.id) {
+        throw new Error('El socket todavía no tiene una sesión iniciada')
+      }
+
+      const botJid = jidNormalizedUser(sock.user.id)
 
       const media = await prepareWAMessageMedia(
         {
@@ -96,25 +109,26 @@ ${body}`.trim()
         }
       )
 
-      const content = {
-        interactiveMessage: {
+      const interactiveMessage =
+        proto.Message.InteractiveMessage.create({
           header: {
-            title: globalThis.botName,
+            title: botName,
             hasMediaAttachment: true,
 
-            productMessage: {
+            productMessage: proto.Message.ProductMessage.create({
               product: {
                 productImage: media.imageMessage,
                 productId: '25015941284694382',
-                title: '',
-                description: 'Un simple asistente de WhatsApp, destinado a ayudar!',
-                retailerId: globalThis.botName,
+                title: botName,
+                description:
+                  'Un simple asistente de WhatsApp, destinado a ayudar.',
+                retailerId: botName,
                 url: 'https://sylphyy.xyz',
                 productImageCount: 1
               },
 
-              businessOwnerJid: '24580450156657@lid'
-            }
+              businessOwnerJid: botJid
+            })
           },
 
           body: {
@@ -124,39 +138,44 @@ ${body}`.trim()
           footer: {
             text: 'Using Baileys ©'
           },
-
           nativeFlowMessage: {
-            buttons: [
-              {
-                name: 'quick_reply',
-                buttonParamsJson: JSON.stringify({
-                  display_text: '🪴 PING',
-                  id: `${m.prefix}p`
-                })
-              }
-            ]
+            buttons: [],
+            messageVersion: 1
           },
 
           contextInfo: {
-            mentionedJid: [m.sender],
-            groupMentions: [],
-            statusAttributions: [],
-            pairedMediaType: 0
+            mentionedJid: [m.sender]
           }
-        }
-      }
+        })
 
-      return await sock.relayMessage(
-        m.chat || m.from,
+      const generatedMessage = generateWAMessageFromContent(
+        jid,
         {
           viewOnceMessage: {
             message: {
-              interactiveMessage: content.interactiveMessage
+              messageContextInfo: {
+                deviceListMetadata: {},
+                deviceListMetadataVersion: 2
+              },
+
+              interactiveMessage
             }
           }
         },
-        {}
+        {
+          userJid: botJid
+        }
       )
+
+      await sock.relayMessage(
+        jid,
+        generatedMessage.message,
+        {
+          messageId: generatedMessage.key.id
+        }
+      )
+
+      return generatedMessage
     } catch (error) {
       console.error('Error enviando el menú interactivo:', error)
 
