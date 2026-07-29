@@ -45,7 +45,7 @@ export default {
       })
 
       const data = await getJson(
-        `https://api.lempi.lat/dl/yta?url=${encodeURIComponent(videoUrl)}&quality=128&apikey=Adobuffkey`,
+        `https://api.lempi.lat/dl/ytv?url=${encodeURIComponent(videoUrl)}&quality=480&apikey=Adobuffkey`,
         120000
       )
 
