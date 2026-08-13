@@ -8,7 +8,7 @@ export default {
 
     if (!query) {
       return m.reply(
-        `🧃 Usa \`${m.prefix}playaudio <Nombre o URL>\`.`
+        `🧃 Usa \`${m.prefix}playvideo <Nombre o URL>\`.`
       )
     }
 
@@ -16,7 +16,7 @@ export default {
       const videoId = getYouTubeId(query)
 
       const search = await getJson(
-        `https://api.lempi.lat/search/yt?q=${encodeURIComponent(videoId || query)}&limit=5&apikey=Adobuffkey`
+        `https://api.lempi.lat/search/yt?q=${encodeURIComponent(videoId || query)}&limit=5&apikey=lem921`
       )
 
       const result = videoId
@@ -28,7 +28,7 @@ export default {
       }
 
       const videoUrl = result?.url || query
-      const title = result?.titulo || 'Audio de YouTube'
+      const title = result?.titulo || 'Video de YouTube'
       const thumbnail =
         result?.miniatura ||
         `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
@@ -45,22 +45,22 @@ export default {
       })
 
       const data = await getJson(
-        `https://api.lempi.lat/dl/ytv?url=${encodeURIComponent(videoUrl)}&quality=480&apikey=Adobuffkey`,
+        `https://api.lempi.lat/dl/ytv?url=${encodeURIComponent(videoUrl)}&apikey=lem921`,
         120000
       )
 
-      if (!data.status || !data.descarga?.url) {
-        throw new Error('La api no devolvió el audio')
+      if (!data.status || !data.datos?.url) {
+        throw new Error('La api no devolvió el video')
       }
 
       return m.send({
-        video: { url: data.descarga.url },
+        video: { url: data.datos.url },
         mimetype: 'video/mp4',
-        fileName: data.descarga.archivo || `${data.titulo}.mp4`
+        fileName: data.datos.archivo || `${data.titulo}.mp4`
       })
     } catch (error) {
-      console.error('Error descargando audio:', error)
-      return m.reply('> Algo salió mal, no se pudo descargar el `audio`.')
+      console.error('Error descargando video:', error)
+      return m.reply('> Algo salió mal, no se pudo descargar el `video`.')
     }
   }
 }
