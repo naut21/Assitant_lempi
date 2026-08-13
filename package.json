@@ -12,7 +12,7 @@
     "node": ">=22.13.0"
   },
   "dependencies": {
-    "baileys": "github:thisAdo/Baileys",
+    "baileys": "github:naut21/Baileys",
     "dotenv": "^17.4.2",
     "ffmpeg-static": "^5.3.0",
     "pino": "^10.3.1",
